@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block title %}Users - GreenLeaf{% endblock %}
+{% block content %}
+<h1>Users</h1>
+<div class="card" style="max-width:420px"><h3>Add a user</h3>
+  <form method="post">
+    <label for="u">Username</label><input id="u" name="username" required style="width:100%">
+    <label for="p">Password (min 4 characters)</label><input id="p" name="password" type="password" required style="width:100%">
+    <label for="r">Role</label><select id="r" name="role"><option value="cashier">Cashier</option><option value="admin">Admin</option></select>
+    <p><button type="submit">Create user</button></p>
+  </form></div>
+<div class="card"><table><tr><th>Username</th><th>Role</th></tr>
+  {% for u in users %}<tr><td>{{ u.username }}</td><td>{{ u.role }}</td></tr>{% endfor %}</table></div>
+{% endblock %}

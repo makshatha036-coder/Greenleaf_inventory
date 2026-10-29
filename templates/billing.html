@@ -1,0 +1,50 @@
+{% extends "base.html" %}{% block title %}New bill - GreenLeaf{% endblock %}
+{% block content %}
+<h1>New bill</h1>
+<form method="post" class="card" id="billform">
+  <div class="scroll"><table id="lines"><thead><tr><th>Product</th><th>Quantity</th><th class="right">Line total</th><th></th></tr></thead><tbody></tbody></table></div>
+  <p><button type="button" class="alt" id="add">Add item</button></p>
+  <div style="display:flex;gap:16px;align-items:end;flex-wrap:wrap">
+    <div><label for="discount">Discount (%)</label><input id="discount" name="discount" type="number" min="0" max="100" step="0.5" value="0"></div>
+    <div><p style="margin:0">Subtotal: <b>₹<span id="sub">0.00</span></b><br>Total: <b>₹<span id="tot">0.00</span></b></p></div>
+  </div>
+  <p><button type="submit">Create bill</button></p>
+</form>
+<script>
+const PRODUCTS = {{ products|tojson }};
+const tbody = document.querySelector('#lines tbody');
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+function addRow(){
+  const tr = document.createElement('tr');
+  const opts = PRODUCTS.map(p => `<option value="${p.product_id}" data-price="${p.unit_price}" data-stock="${p.stock_qty}" data-name="${esc(p.name)}">${esc(p.name)} - ₹${p.unit_price.toFixed(2)} (${p.stock_qty} in stock)</option>`).join('');
+  tr.innerHTML = `<td><select name="product_id" required><option value="">Choose a product</option>${opts}</select></td>
+    <td><input name="quantity" type="number" min="1" step="1" value="1" required style="width:90px"></td>
+    <td class="right">₹<span class="lt">0.00</span></td><td><button type="button" class="danger rm">Remove</button></td>`;
+  tbody.appendChild(tr);
+}
+function recalc(){
+  let sub = 0;
+  tbody.querySelectorAll('tr').forEach(tr => {
+    const o = tr.querySelector('select').selectedOptions[0];
+    const q = parseInt(tr.querySelector('input').value, 10) || 0;
+    const lt = o && o.dataset.price ? q * parseFloat(o.dataset.price) : 0;
+    tr.querySelector('.lt').textContent = lt.toFixed(2); sub += lt;
+  });
+  const d = Math.min(100, Math.max(0, parseFloat(document.getElementById('discount').value) || 0));
+  document.getElementById('sub').textContent = sub.toFixed(2);
+  document.getElementById('tot').textContent = (sub * (1 - d/100)).toFixed(2);
+}
+document.getElementById('add').onclick = () => { addRow(); recalc(); };
+tbody.addEventListener('input', recalc); tbody.addEventListener('change', recalc);
+tbody.addEventListener('click', e => { if (e.target.classList.contains('rm')) { e.target.closest('tr').remove(); recalc(); } });
+document.getElementById('discount').addEventListener('input', recalc);
+document.getElementById('billform').addEventListener('submit', e => {
+  if (!tbody.children.length) { e.preventDefault(); alert('Add at least one item.'); return; }
+  for (const tr of tbody.children) {
+    const o = tr.querySelector('select').selectedOptions[0], q = parseInt(tr.querySelector('input').value, 10);
+    if (o && o.dataset.stock && q > parseInt(o.dataset.stock, 10)) { e.preventDefault(); alert('Only ' + o.dataset.stock + ' of ' + o.dataset.name + ' in stock.'); return; }
+  }
+});
+addRow();
+</script>
+{% endblock %}

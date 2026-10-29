@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block title %}Bills - GreenLeaf{% endblock %}
+{% block content %}
+<h1>Recent bills</h1>
+<div class="card"><div class="scroll"><table>
+  <tr><th>Bill</th><th>Date</th><th>Time</th><th>Cashier</th><th class="right">Total</th></tr>
+  {% for s in sales %}<tr><td><a href="{{ url_for('main.bill_view', sale_id=s.sale_id) }}">#{{ s.sale_id }}</a></td>
+    <td>{{ s.sale_date }}</td><td>{{ s.sale_time }}</td><td>{{ s.username }}</td><td class="right">₹{{ '%.2f'|format(s.total_amount) }}</td></tr>
+  {% else %}<tr><td colspan="5" class="muted">No bills yet. Create the first one.</td></tr>{% endfor %}
+</table></div></div>
+{% endblock %}

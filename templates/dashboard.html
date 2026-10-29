@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% block title %}Dashboard - GreenLeaf{% endblock %}
+{% block content %}
+<h1>Welcome, {{ session.username }}</h1>
+{% if not kpis %}
+  <div class="card"><p>Start a sale or review your recent bills.</p>
+  <a class="btn" href="{{ url_for('main.billing') }}">Create a bill</a></div>
+{% else %}
+  <p class="muted">Last 30 days ({{ start }} to {{ end }})</p>
+  <div class="grid">
+    <div class="kpi"><span>Total revenue</span><strong>₹{{ '%.2f'|format(kpis.total_revenue) }}</strong></div>
+    <div class="kpi"><span>Average bill value</span><strong>₹{{ '%.2f'|format(kpis.avg_bill) }}</strong></div>
+    <div class="kpi"><span>Bills</span><strong>{{ kpis.bills }}</strong></div>
+    <div class="kpi"><span>Stock turnover</span><strong>{{ kpis.stock_turnover }}</strong></div>
+    <div class="kpi"><span>Low-stock items</span><strong>{{ kpis.low_stock_count }}</strong></div>
+    <div class="kpi"><span>Top category</span><strong>{{ kpis.top_category }} ({{ kpis.top_category_share }}%)</strong></div>
+  </div>
+  <div class="card"><h3>Low-stock alerts ({{ low|length }})</h3>
+    {% if low %}<div class="scroll"><table><tr><th>Product</th><th>Category</th><th>In stock</th><th>Reorder level</th></tr>
+    {% for r in low[:10] %}<tr class="low"><td>{{ r.name }}</td><td>{{ r.category }}</td><td>{{ r.stock_qty }}</td><td>{{ r.reorder_level }}</td></tr>{% endfor %}
+    </table></div>{% if low|length > 10 %}<p class="muted">Showing 10 of {{ low|length }}. See Reports for the full list.</p>{% endif %}
+    {% else %}<p class="muted">No products need reordering.</p>{% endif %}
+  </div>
+  <div class="card"><h3>Expiring within {{ days }} days ({{ expiry|length }})</h3>
+    {% if expiry %}<div class="scroll"><table><tr><th>Product</th><th>Expiry date</th><th>In stock</th><th>Status</th></tr>
+    {% for r in expiry[:10] %}<tr class="{{ 'exp' if r.status == 'Expired' else 'low' }}"><td>{{ r.name }}</td><td>{{ r.expiry_date }}</td><td>{{ r.stock_qty }}</td><td>{{ r.status }}</td></tr>{% endfor %}
+    </table></div>{% else %}<p class="muted">Nothing is close to expiry.</p>{% endif %}
+  </div>
+{% endif %}
+{% endblock %}

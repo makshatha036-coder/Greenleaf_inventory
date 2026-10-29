@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block title %}Suppliers - GreenLeaf{% endblock %}
+{% block content %}
+<h1>Suppliers</h1>
+<div class="card" style="max-width:520px"><h3>Add supplier</h3>
+  <form method="post">
+    <label for="n">Name</label><input id="n" name="name" value="{{ f.get('name','') }}" required style="width:100%">
+    <label for="ph">Phone</label><input id="ph" name="phone" value="{{ f.get('phone','') }}" style="width:100%">
+    <label for="em">Email</label><input id="em" name="email" value="{{ f.get('email','') }}" style="width:100%">
+    <p><button type="submit">Add supplier</button></p>
+  </form></div>
+<div class="card"><div class="scroll"><table><tr><th>Name</th><th>Phone</th><th>Email</th><th></th></tr>
+  {% for s in suppliers %}<tr><td>{{ s.name }}</td><td>{{ s.phone or '-' }}</td><td>{{ s.email or '-' }}</td>
+    <td><form class="inline" method="post" action="{{ url_for('main.supplier_delete', supplier_id=s.supplier_id) }}" onsubmit="return confirm('Remove this supplier?')"><button class="danger" type="submit">Remove</button></form></td></tr>
+  {% else %}<tr><td colspan="4" class="muted">No suppliers yet.</td></tr>{% endfor %}</table></div></div>
+{% endblock %}

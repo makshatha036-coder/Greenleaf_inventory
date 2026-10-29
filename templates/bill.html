@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% block title %}Bill #{{ sale.sale_id }}{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>GreenLeaf Grocers - Bill #{{ sale.sale_id }}</h1>
+  <p class="muted">{{ sale.sale_date }} {{ sale.sale_time }} | Cashier: {{ sale.username }}</p>
+  <div class="scroll"><table>
+    <tr><th>Item</th><th class="right">Qty</th><th class="right">Price</th><th class="right">Total</th></tr>
+    {% for i in items %}<tr><td>{{ i.name }}</td><td class="right">{{ i.quantity }}</td><td class="right">₹{{ '%.2f'|format(i.price) }}</td><td class="right">₹{{ '%.2f'|format(i.line_total) }}</td></tr>{% endfor %}
+    <tr><td colspan="3" class="right">Subtotal</td><td class="right">₹{{ '%.2f'|format(sale.subtotal) }}</td></tr>
+    <tr><td colspan="3" class="right">Discount ({{ '%g'|format(sale.discount_percent) }}%)</td><td class="right">-₹{{ '%.2f'|format(sale.subtotal - sale.total_amount) }}</td></tr>
+    <tr><th colspan="3" class="right">Total</th><th class="right">₹{{ '%.2f'|format(sale.total_amount) }}</th></tr>
+  </table></div>
+  <p class="noprint"><button onclick="window.print()">Print bill</button>
+    <a class="btn alt" href="{{ url_for('main.bill_csv', sale_id=sale.sale_id) }}">Download CSV</a>
+    <a class="btn alt" href="{{ url_for('main.billing') }}">New bill</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}{% block title %}Products - GreenLeaf{% endblock %}
+{% block content %}
+<div class="head"><h1>Products ({{ products|length }})</h1>
+  <span><a class="btn" href="{{ url_for('main.product_add') }}">Add product</a>
+  <a class="btn alt" href="{{ url_for('main.products_export') }}">Export CSV</a></span></div>
+<div class="card">
+  <form class="row" method="get">
+    <div><label for="q">Search</label><input id="q" name="q" value="{{ q }}" placeholder="Name or category"></div>
+    <div><label for="c">Category</label><select id="c" name="category"><option value="">All</option>
+      {% for c in categories %}<option {{ 'selected' if c == category }}>{{ c }}</option>{% endfor %}</select></div>
+    <button type="submit">Search</button><a class="btn alt" href="{{ url_for('main.products') }}">Clear</a>
+  </form>
+</div>
+<div class="card"><div class="scroll"><table>
+  <tr><th>Name</th><th>Category</th><th class="right">Price</th><th class="right">Stock</th><th class="right">Reorder at</th><th>Expiry</th><th>Supplier</th><th></th></tr>
+  {% for p in products %}
+  <tr class="{{ 'low' if p.stock_qty <= p.reorder_level }} {{ 'exp' if p.expiry_date and p.expiry_date <= soon }}">
+    <td>{{ p.name }}
+      {% if p.stock_qty <= p.reorder_level %}<span class="tag">Low stock</span>{% endif %}
+      {% if p.expiry_date and p.expiry_date < today %}<span class="tag bad">Expired</span>
+      {% elif p.expiry_date and p.expiry_date <= soon %}<span class="tag bad">Expiring soon</span>{% endif %}</td>
+    <td>{{ p.category }}</td><td class="right">₹{{ '%.2f'|format(p.unit_price) }}</td>
+    <td class="right">{{ p.stock_qty }}</td><td class="right">{{ p.reorder_level }}</td>
+    <td>{{ p.expiry_date or '-' }}</td><td>{{ p.supplier_name or '-' }}</td>
+    <td class="noprint"><a href="{{ url_for('main.product_edit', product_id=p.product_id) }}">Edit</a>
+      <form class="inline" method="post" action="{{ url_for('main.product_delete', product_id=p.product_id) }}"
+            onsubmit="return confirm('Delete this product?')"><button class="danger" type="submit">Delete</button></form></td>
+  </tr>
+  {% else %}<tr><td colspan="8" class="muted">No products match. Add one or import a CSV.</td></tr>{% endfor %}
+</table></div></div>
+<div class="card"><h3>Import products from CSV</h3>
+  <p class="muted">Columns: name, category, unit_price, stock_qty (optional: reorder_level, expiry_date as YYYY-MM-DD, supplier_id).</p>
+  <form method="post" action="{{ url_for('main.products_import') }}" enctype="multipart/form-data" class="row">
+    <input type="file" name="file" accept=".csv" required><button type="submit">Import</button>
+  </form></div>
+{% endblock %}

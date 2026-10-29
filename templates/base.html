@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}GreenLeaf Grocers{% endblock %}</title>
+<style>
+:root{--ink:#1e2b22;--muted:#5f6f64;--line:#d9e2d6;--bg:#f6f8f3;--card:#fff;--green:#2f7d4f;--dark:#1f5a38;--warn:#b25b00;--bad:#b3261e;--ok:#1f6b3a}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.5 "Segoe UI",system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--bg)}
+nav{background:var(--dark);color:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:4px 18px;padding:10px 20px}
+nav b{font-size:17px;margin-right:12px}
+nav a{color:#e3f1e6;text-decoration:none;padding:4px 2px}
+nav a:hover,nav a:focus-visible{color:#fff;text-decoration:underline}
+nav .sp{flex:1}
+main{max-width:1100px;margin:22px auto;padding:0 16px}
+h1{font-size:24px;margin:0 0 14px}h3{font-size:16px;margin:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:16px}
+.head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--green);border-radius:8px;padding:10px 14px}
+.kpi span{display:block;color:var(--muted);font-size:13px}.kpi strong{font-size:21px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+th{background:#eef3ea;font-weight:600}
+.scroll{overflow-x:auto}
+input,select,button,.btn{font:inherit;padding:7px 10px;border:1px solid #b7c5b4;border-radius:6px;background:#fff}
+button,.btn{background:var(--green);color:#fff;border-color:var(--green);cursor:pointer;text-decoration:none;display:inline-block}
+button:hover,.btn:hover{background:var(--dark)}
+button.alt,.btn.alt{background:#fff;color:var(--green)}button.alt:hover,.btn.alt:hover{background:#eef3ea}
+button.danger{background:#fff;color:var(--bad);border-color:var(--bad)}
+:focus-visible{outline:3px solid #86c79b;outline-offset:1px}
+label{display:block;margin:10px 0 3px;font-weight:600}
+form.inline{display:inline}form.row{display:flex;flex-wrap:wrap;gap:8px;align-items:end}
+.flash{padding:9px 14px;border-radius:6px;margin-bottom:8px}
+.flash.error{background:#fdecea;color:var(--bad);border:1px solid #f3c1bd}
+.flash.ok{background:#e6f4ea;color:var(--ok);border:1px solid #bfdcc8}
+.muted{color:var(--muted)}.low{background:#fff4e0}.exp{background:#fdecea}
+.tag{font-size:12px;padding:1px 7px;border-radius:10px;background:#fff4e0;color:var(--warn)}.tag.bad{background:#fdecea;color:var(--bad)}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:14px}
+.charts img{max-width:100%;height:auto}
+.right{text-align:right}
+@media print{nav,.noprint,.flash{display:none}body{background:#fff}.card{border:0}}
+</style>
+</head>
+<body>
+<nav>
+  <b>GreenLeaf Grocers</b>
+  {% if session.user_id %}
+    <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('main.billing') }}">New bill</a>
+    <a href="{{ url_for('main.bills') }}">Bills</a>
+    {% if session.role == 'admin' %}
+      <a href="{{ url_for('main.products') }}">Products</a>
+      <a href="{{ url_for('main.suppliers_page') }}">Suppliers</a>
+      <a href="{{ url_for('main.reports_page') }}">Reports</a>
+      <a href="{{ url_for('main.users_page') }}">Users</a>
+    {% endif %}
+    <span class="sp"></span>
+    <span>{{ session.username }} ({{ session.role }})</span>
+    <a href="{{ url_for('main.logout') }}">Log out</a>
+  {% endif %}
+</nav>
+<main>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}<div class="flash {{ cat }}" role="alert">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

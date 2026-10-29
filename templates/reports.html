@@ -1,0 +1,40 @@
+{% extends "base.html" %}{% block title %}Reports - GreenLeaf{% endblock %}
+{% macro tbl(title, rows, cols, name, start, end) %}
+<div class="card"><div class="head"><h3>{{ title }}</h3>
+  <a href="{{ url_for('main.export_report', name=name, start=start, end=end) }}">Export CSV</a></div>
+  {% if rows %}<div class="scroll"><table><tr>{% for h, k in cols %}<th>{{ h }}</th>{% endfor %}</tr>
+  {% for r in rows %}<tr>{% for h, k in cols %}<td>{{ r[k] }}</td>{% endfor %}</tr>{% endfor %}</table></div>
+  {% else %}<p class="muted">No data for this report.</p>{% endif %}</div>
+{% endmacro %}
+{% block content %}
+<h1>Reports</h1>
+<form class="card row" method="get">
+  <div><label for="start">From</label><input id="start" type="date" name="start" value="{{ start }}"></div>
+  <div><label for="end">To</label><input id="end" type="date" name="end" value="{{ end }}"></div>
+  <div><label for="metric">Charts show</label><select id="metric" name="metric">
+    <option value="revenue" {{ 'selected' if metric == 'revenue' }}>Revenue</option>
+    <option value="quantity" {{ 'selected' if metric == 'quantity' }}>Quantity</option></select></div>
+  <button type="submit">Update</button>
+</form>
+<div class="grid">
+  <div class="kpi"><span>Total revenue</span><strong>₹{{ '%.2f'|format(kpis.total_revenue) }}</strong></div>
+  <div class="kpi"><span>Average bill value</span><strong>₹{{ '%.2f'|format(kpis.avg_bill) }}</strong></div>
+  <div class="kpi"><span>Units sold</span><strong>{{ kpis.units_sold }}</strong></div>
+  <div class="kpi"><span>Stock turnover</span><strong>{{ kpis.stock_turnover }}</strong></div>
+  <div class="kpi"><span>Low-stock items</span><strong>{{ kpis.low_stock_count }}</strong></div>
+  <div class="kpi"><span>Top category share</span><strong>{{ kpis.top_category_share }}%</strong><span>{{ kpis.top_category }}</span></div>
+</div>
+<div class="charts">
+  {% for key in ['daily', 'monthly', 'top', 'category'] %}
+    <div class="card">{% if charts[key] %}<img alt="{{ key }} chart" src="data:image/png;base64,{{ charts[key] }}">
+    {% else %}<p class="muted">No sales in this date range.</p>{% endif %}</div>
+  {% endfor %}
+</div>
+{{ tbl('Daily sales (latest 31 days in range)', daily, [('Date','date'),('Revenue (₹)','revenue'),('Bills','bills'),('Units','quantity')], 'daily', start, end) }}
+{{ tbl('Monthly sales', monthly, [('Month','month'),('Revenue (₹)','revenue'),('Bills','bills'),('Units','quantity')], 'monthly', start, end) }}
+{{ tbl('Top 10 products', top, [('Product','name'),('Category','category'),('Units','quantity'),('Revenue (₹)','revenue')], 'top_products', start, end) }}
+{{ tbl('Category share', cats, [('Category','category'),('Units','quantity'),('Revenue (₹)','revenue'),('Share (%)','share_pct')], 'category_share', start, end) }}
+{{ tbl('Low stock - reorder these', low, [('Product','name'),('Category','category'),('In stock','stock_qty'),('Reorder level','reorder_level')], 'low_stock', start, end) }}
+{{ tbl('Expiring within ' ~ days ~ ' days', expiry, [('Product','name'),('Expiry','expiry_date'),('In stock','stock_qty'),('Status','status')], 'expiry', start, end) }}
+{{ tbl('Slow-moving (30 days)', slow, [('Product','name'),('Category','category'),('In stock','stock_qty'),('Units sold','units_sold'),('Last sold','last_sold')], 'slow_moving', start, end) }}
+{% endblock %}
