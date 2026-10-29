@@ -39,12 +39,34 @@ def authenticate(username, password):
         return row
     return None
 
-
 def ensure_default_users():
-    """Create demo accounts on first run."""
-    if get_db().execute("SELECT COUNT(*) FROM users").fetchone()[0] == 0:
-        create_user("admin", "admin123", "admin")
-        create_user("cashier", "cashier123", "cashier")
+    """Create default accounts only when they do not already exist."""
+    db = get_db()
+
+    default_users = [
+        ("admin", "admin123", "admin"),
+        ("cashier", "cashier123", "cashier"),
+    ]
+
+    for username, password, role in default_users:
+        existing_user = db.execute(
+            "SELECT user_id FROM users WHERE username = ?",
+            (username,)
+        ).fetchone()
+
+        if existing_user is None:
+            try:
+                create_user(username, password, role)
+            except ValidationError:
+                # Another startup may have created this account.
+                existing_user = get_db().execute(
+                    "SELECT user_id FROM users WHERE username = ?",
+                    (username,)
+                ).fetchone()
+
+                if existing_user is None:
+                    raise
+
 
 
 # ---------- products ----------
